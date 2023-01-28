@@ -33,6 +33,14 @@ class MultistepForm extends FormBase
             $form_state->set('page', 1);
         }
 
+        //Empty container to display the error messges.
+        $form['messages'] = [
+            '#type' => 'container',
+            '#attributes' => [
+                'id' => 'form-errors'
+            ],
+        ];
+
         $page = $form_state->get('page');
         $form['progress'] = $this->buildProgressBar($page);
 
@@ -167,6 +175,17 @@ class MultistepForm extends FormBase
     public function formAjaxChangePage(array &$form, FormStateInterface $form_state)
     {
         $response = new AjaxResponse();
+
+        //Dsiplay the form error messages if it has any.
+        if ($form_state->hasAnyErrors()) {
+            $messages = \Drupal::messenger()->deleteAll();
+            $form['messages']['content'] = [
+                '#theme'        => 'status_messages',
+                '#message_list' => $messages,
+            ];
+            $response->addCommand(new ReplaceCommand('#form-errors', $form['messages']));
+        }
+
         $response->addCommand(new ReplaceCommand('#form-content', $form['content']));
 
         return $response;
