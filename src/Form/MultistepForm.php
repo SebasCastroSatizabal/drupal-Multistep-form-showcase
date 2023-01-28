@@ -172,6 +172,13 @@ class MultistepForm extends FormBase
         $form_state->setRebuild(TRUE);
     }
 
+    /**
+     * Callback function to handler the ajax behavior of the buttons.
+     * 
+     * @param array $form
+     * @param FormStateInterface $form_state
+     * @return AjaxResponse with the commands to be executed by the Drupal Ajax API. 
+     */
     public function formAjaxChangePage(array &$form, FormStateInterface $form_state)
     {
         $response = new AjaxResponse();
@@ -393,7 +400,13 @@ class MultistepForm extends FormBase
         return $build;
     }
 
-    private function buildProgressBar($step)
+    /**
+     * Builds the progress bar of the form.
+     * 
+     * @param int $page the current page of the form.
+     * @return array render array with teh markup for the progress bar.
+     */
+    private function buildProgressBar(int $page)
     {
         $build['wrapper'] = [
             '#type' => 'container',
@@ -437,8 +450,8 @@ class MultistepForm extends FormBase
             ],
         ];
 
-        //Add the active class to the current step
-        $build['wrapper']['progressbar']['item' . $step]['#attributes']['çlass'][] = 'active';
+        //Add the active class to the current page
+        $build['wrapper']['progressbar']['item' . $page]['#attributes']['çlass'][] = 'active';
 
         return $build;
     }
