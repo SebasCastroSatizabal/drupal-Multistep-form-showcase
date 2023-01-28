@@ -8,6 +8,7 @@
 namespace Drupal\multistep_form_showcase\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -41,10 +42,9 @@ class MultistepForm extends FormBase
             ],
         ];
 
-        $page = $form_state->get('page');
-        $form['progress'] = $this->buildProgressBar($page);
+        $form['progress'] = $this->buildProgressBar();
 
-        switch ($page) {
+        switch ($form_state->get('page')) {
             case 2:
                 $form['content'] = $this->buildSecondPage($form, $form_state);
                 break;
@@ -60,6 +60,8 @@ class MultistepForm extends FormBase
         $form['content']['#type'] = 'container';
         $form['content']['#attributes']['id'] = 'form-content';
 
+        //Attach JS and CSS library
+        $form['#attached']['library'][] = 'multistep_form_showcase/global';
 
         return $form;
     }
@@ -194,6 +196,7 @@ class MultistepForm extends FormBase
         }
 
         $response->addCommand(new ReplaceCommand('#form-content', $form['content']));
+        $response->addCommand(new InvokeCommand(NULL, 'updateProgressBar', [$form_state->get('page')]));
 
         return $response;
     }
@@ -318,6 +321,7 @@ class MultistepForm extends FormBase
             '#type' => 'textfield',
             '#title' => $this->t('City'),
             '#default_value' => $form_state->getValue('city', ''),
+            '#description' => $this->t('Enter the city you live in.'),
             // '#required' => TRUE,
         ];
 
@@ -326,6 +330,7 @@ class MultistepForm extends FormBase
             '#title' => $this->t('Phone number'),
             '#pattern' => '[0-9]{9,14}',
             '#default_value' => $form_state->getValue('phone', ''),
+            '#description' => $this->t('Enter your phone number.'),
             '#attributes' => [
                 'placeholder' => 'Ex. 3124658793',
             ],
@@ -335,6 +340,7 @@ class MultistepForm extends FormBase
             '#type' => 'textfield',
             '#title' => $this->t('Address'),
             '#default_value' => $form_state->getValue('address', ''),
+            '#description' => $this->t('Enter your address.'),
         ];
 
         $build['back'] = [
@@ -403,10 +409,9 @@ class MultistepForm extends FormBase
     /**
      * Builds the progress bar of the form.
      * 
-     * @param int $page the current page of the form.
      * @return array render array with teh markup for the progress bar.
      */
-    private function buildProgressBar(int $page)
+    private function buildProgressBar()
     {
         $build['wrapper'] = [
             '#type' => 'container',
@@ -426,18 +431,21 @@ class MultistepForm extends FormBase
         $build['wrapper']['progressbar']['item1'] = [
             '#type' => 'html_tag',
             '#tag' => 'li',
-            '#value' => 'Account',
+            '#value' => 'First Page',
             '#attributes' => [
-                'class' => ['account'],
+                'class' => [
+                    'first-page-item',
+                    'active' //Inicial active item.
+                ],
             ],
         ];
 
         $build['wrapper']['progressbar']['item2'] = [
             '#type' => 'html_tag',
             '#tag' => 'li',
-            '#value' => 'Email',
+            '#value' => 'Second Page',
             '#attributes' => [
-                'class' => ['email'],
+                'class' => ['second-page-item'],
             ],
         ];
 
@@ -446,12 +454,9 @@ class MultistepForm extends FormBase
             '#tag' => 'li',
             '#value' => 'Complete',
             '#attributes' => [
-                'class' => ['complete'],
+                'class' => ['third-page-item'],
             ],
         ];
-
-        //Add the active class to the current page
-        $build['wrapper']['progressbar']['item' . $page]['#attributes']['çlass'][] = 'active';
 
         return $build;
     }
