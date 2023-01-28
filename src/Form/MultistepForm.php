@@ -7,6 +7,7 @@
 
 namespace Drupal\multistep_form_showcase\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -31,14 +32,27 @@ class MultistepForm extends FormBase
             $form_state->set('page', 1);
         }
 
-        switch ($form_state->get('page')) {
+        $page = $form_state->get('page');
+        $form['progress'] = $this->buildProgressBar($page);
+
+        switch ($page) {
             case 2:
-                return $this->buildSecondPage($form, $form_state);
+                $form['content'] = $this->buildSecondPage($form, $form_state);
+                break;
             case 3:
-                return $this->buildThirdPage($form, $form_state);
+                $form['content'] = $this->buildThirdPage($form, $form_state);
+                break;
             default:
-                return $this->buildFirstPage($form, $form_state);
+                $form['content'] = $this->buildFirstPage($form, $form_state);
+                break;
         }
+
+        //Define al the fields inside a container to be able to replace it with Ajax.
+        $form['content']['#type'] = 'container';
+        $form['content']['#attributes']['id'] = 'form-content';
+
+
+        return $form;
     }
 
     /**
@@ -49,11 +63,17 @@ class MultistepForm extends FormBase
      */
     public function formFirstNextValidate(array &$form, FormStateInterface $form_state)
     {
-        $birth_year = $form_state->getValue('birth_year');
+        $gender = $form_state->getValue('gender');
+        if ($gender != '' && $gender === 'other') {
+            $other_gender = $form_state->getValue('other_gender');
 
-        if ($birth_year != '' && ($birth_year < 1900 || $birth_year > 2000)) {
-            // Set an error for the form element with a key of "birth_year".
-            $form_state->setErrorByName('birth_year', $this->t('Enter a year between 1900 and 2000.'));
+            if (empty($other_gender)) {
+                // Set an error when selecting 'other' gender and not filling the other gender field
+                $form_state->setErrorByName(
+                    'other_gender',
+                    $this->t('When the "Other" gender is selected the name of the gender is required.')
+                );
+            }
         }
     }
 
@@ -107,6 +127,7 @@ class MultistepForm extends FormBase
         $form_state->setRebuild(TRUE);
     }
 
+    //TODO Remove if not needed
     /**
      * Validation handler for page 2.
      *
@@ -140,6 +161,11 @@ class MultistepForm extends FormBase
         $form_state->setRebuild(TRUE);
     }
 
+    public function formAjaxChangePage(array &$form, FormStateInterface $form_state)
+    {
+        return $form['content'];
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -159,15 +185,15 @@ class MultistepForm extends FormBase
      * @return array
      *   The render array with the items on this page.
      */
-    public function buildFirstPage(array &$form, FormStateInterface $form_state)
+    private function buildFirstPage(array &$form, FormStateInterface $form_state)
     {
 
-        $form['description'] = [
+        $build['description'] = [
             '#type' => 'item',
             '#title' => $this->t('A multistep form showcase (page 1)'),
         ];
 
-        $form['first_name'] = [
+        $build['first_name'] = [
             '#type' => 'textfield',
             '#title' => $this->t('First Name'),
             '#description' => $this->t('Enter your first name.'),
@@ -175,7 +201,7 @@ class MultistepForm extends FormBase
             // '#required' => TRUE,
         ];
 
-        $form['last_name'] = [
+        $build['last_name'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Last Name'),
             '#default_value' => $form_state->getValue('last_name', ''),
@@ -183,7 +209,7 @@ class MultistepForm extends FormBase
             // '#required' => TRUE,
         ];
 
-        $form['gender'] = [
+        $build['gender'] = [
             '#type' => 'radios',
             '#title' => $this->t('Gender'),
             '#default_value' => $form_state->getValue('gender', ''),
@@ -196,7 +222,7 @@ class MultistepForm extends FormBase
             // '#required' => TRUE,
         ];
 
-        $form['other_gender'] = [
+        $build['other_gender'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Other Gender'),
             '#default_value' => $form_state->getValue('other_gender', ''),
@@ -211,26 +237,34 @@ class MultistepForm extends FormBase
             ]
         ];
 
-        $form['birthday'] = [
+        $build['birthday'] = [
             '#type' => 'date',
             '#title' => $this->t('Date of birth'),
             '#description' => $this->t('Enter your birthday.'),
             // '#required' => TRUE,
         ];
 
-        $form['actions'] = [
+        $build['actions'] = [
             '#type' => 'actions',
         ];
 
-        $form['actions']['next'] = [
+        $build['actions']['next'] = [
             '#type' => 'submit',
             '#button_type' => 'primary',
             '#value' => $this->t('Next'),
             '#submit' => ['::formFirstNextSubmit'],
-            '#validate' => ['::formFirstNextSubmit'],
+            '#validate' => ['::formFirstNextValidate'],
+            '#ajax' => [
+                'callback' => '::formAjaxChangePage',
+                'wrapper' => 'form-content',
+                'progress' => [
+                    'type' => 'throbber',
+                    'message' => $this->t('Verifying entry...'),
+                ],
+            ],
         ];
 
-        return $form;
+        return $build;
     }
 
     /**
@@ -242,51 +276,70 @@ class MultistepForm extends FormBase
      * @return array
      *   The render array with the items on this page.
      */
-    public function buildSecondPage(array &$form, FormStateInterface $form_state)
+    private function buildSecondPage(array &$form, FormStateInterface $form_state)
     {
 
-        $form['description'] = [
+        $build['description'] = [
             '#type' => 'item',
             '#title' => $this->t('A multistep form showcase (page 2)'),
         ];
 
-        $form['city'] = [
+        $build['city'] = [
             '#type' => 'textfield',
             '#title' => $this->t('City'),
             '#default_value' => $form_state->getValue('city', ''),
             // '#required' => TRUE,
         ];
 
-        $form['phone'] = array(
+        $build['phone'] = array(
             '#type' => 'tel',
             '#title' => $this->t('Phone number'),
             '#pattern' => '[0-9]{9,14}',
             '#default_value' => $form_state->getValue('phone', ''),
+            '#attributes' => [
+                'placeholder' => 'Ex. 3124658793',
+            ],
         );
 
-        $form['address'] = [
+        $build['address'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Address'),
             '#default_value' => $form_state->getValue('address', ''),
         ];
 
-        $form['back'] = [
+        $build['back'] = [
             '#type' => 'submit',
             '#value' => $this->t('Back'),
             '#submit' => ['::formSecondPageTwoBack'],
             // Do not validate the fields since the user must come back to this form.
             '#limit_validation_errors' => [],
+            '#ajax' => [
+                'callback' => '::formAjaxChangePage',
+                'wrapper' => 'form-content',
+                'progress' => [
+                    'type' => 'throbber',
+                    'message' => $this->t('Verifying entry...'),
+                ],
+            ],
         ];
 
-        $form['submit'] = [
+        $build['submit'] = [
             '#type' => 'submit',
             '#button_type' => 'primary',
             '#value' => $this->t('Submit'),
             '#submit' => ['::formSecondNextSubmit'],
             '#validate' => ['::formSecondNextSubmit'],
+            '#ajax' => [
+                'callback' => '::formAjaxChangePage',
+                'wrapper' => 'form-content',
+                'progress' => [
+                    'type' => 'throbber',
+                    'message' => $this->t('Verifying entry...'),
+                ],
+            ],
         ];
 
-        return $form;
+        return $build;
     }
 
 
@@ -299,29 +352,29 @@ class MultistepForm extends FormBase
      * @return array
      *   The render array with the items on this page.
      */
-    public function buildThirdPage(array &$form, FormStateInterface $form_state)
+    private function buildThirdPage(array &$form, FormStateInterface $form_state)
     {
 
-        $form['description'] = [
+        $build['description'] = [
             '#type' => 'item',
             '#title' => $this->t('A multistep form showcase (page 3)'),
         ];
 
-        $form['body'] = [
+        $build['body'] = [
             '#type' => 'item',
             '#title' => $this->t('Confirm the form'),
         ];
 
-        $form['submit'] = [
+        $build['submit'] = [
             '#type' => 'submit',
             '#button_type' => 'primary',
             '#value' => $this->t('Return'),
         ];
 
-        return $form;
+        return $build;
     }
 
-    private function getFormBar($step)
+    private function buildProgressBar($step)
     {
         $build['wrapper'] = [
             '#type' => 'container',
