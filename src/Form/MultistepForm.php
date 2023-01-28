@@ -65,13 +65,20 @@ class MultistepForm extends FormBase
      */
     public function formFirstNextSubmit(array &$form, FormStateInterface $form_state)
     {
-        $form_state->set('stored_values', [
-            'first_name' => $form_state->getValue('first_name'),
-            'last_name' => $form_state->getValue('last_name'),
-            'gender' => $form_state->getValue('gender'),
-            'other_gender' => $form_state->getValue('other_gender'),
-            'birthday' => $form_state->getValue('birthday'),
-        ]);
+        $form_state->set(
+            'stored_values',
+            array_merge(
+                $form_state->get('stored_values') ?? [],
+                [
+                    'first_name' => $form_state->getValue('first_name'),
+                    'last_name' => $form_state->getValue('last_name'),
+                    'gender' => $form_state->getValue('gender'),
+                    'other_gender' => $form_state->getValue('other_gender'),
+                    'birthday' => $form_state->getValue('birthday'),
+                ]
+            )
+        );
+        $form_state->setValues($form_state->get('stored_values'));
         $form_state->set('page', 2);
         //Set the form to rebuild so the form shows the next page when using Ajax.
         $form_state->setRebuild(TRUE);
@@ -86,12 +93,13 @@ class MultistepForm extends FormBase
     public function formSecondPageTwoBack(array &$form, FormStateInterface $form_state)
     {
         //Store the values the user already entered to populate the fields when the user comes back.
-        $form_state->setValue('stored_values', array_merge(
-            $form_state->getValue('stored_values'),
+        $form_user_inputs = $form_state->getUserInput();
+        $form_state->set('stored_values', array_merge(
+            $form_state->get('stored_values') ?? [],
             [
-                'city' => $form_state->getValue('city'),
-                'phone' => $form_state->getValue('phone'),
-                'address' => $form_state->getValue('address'),
+                'city' => $form_user_inputs['city'],
+                'phone' => $form_user_inputs['phone'],
+                'address' => $form_user_inputs['address'],
             ]
         ));
         $form_state->setValues($form_state->get('stored_values'));
@@ -118,7 +126,7 @@ class MultistepForm extends FormBase
     public function formSecondNextSubmit(array &$form, FormStateInterface $form_state)
     {
         $form_values = array_merge(
-            $form_state->getValues(),
+            $form_state->get('stored_values') ?? [],
             [
                 'city' => $form_state->getValue('city'),
                 'phone' => $form_state->getValue('phone'),
@@ -252,7 +260,8 @@ class MultistepForm extends FormBase
         $form['phone'] = array(
             '#type' => 'tel',
             '#title' => $this->t('Phone number'),
-            '#pattern' => '[^\\d]*',
+            '#pattern' => '[0-9]{9,14}',
+            '#default_value' => $form_state->getValue('phone', ''),
         );
 
         $form['address'] = [
@@ -264,7 +273,7 @@ class MultistepForm extends FormBase
         $form['back'] = [
             '#type' => 'submit',
             '#value' => $this->t('Back'),
-            '#submit' => ['::fapiExamplePageTwoBack'],
+            '#submit' => ['::formSecondPageTwoBack'],
             // Do not validate the fields since the user must come back to this form.
             '#limit_validation_errors' => [],
         ];
