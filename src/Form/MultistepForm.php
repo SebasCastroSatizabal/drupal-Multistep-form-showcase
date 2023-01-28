@@ -128,7 +128,6 @@ class MultistepForm extends FormBase
         $form_state->setRebuild(TRUE);
     }
 
-    //TODO Remove if not needed
     /**
      * Validation handler for page 2.
      *
@@ -137,6 +136,9 @@ class MultistepForm extends FormBase
      */
     public function formSecondNextValidate(array &$form, FormStateInterface $form_state)
     {
+        if (!preg_match("/^[0-9]{9,14}$/", $form_state->getValue('phone'))) {
+            $form_state->setErrorByName('phone', 'The phone number is not in the correct format.');
+        }
     }
 
     /**
@@ -328,7 +330,7 @@ class MultistepForm extends FormBase
             '#button_type' => 'primary',
             '#value' => $this->t('Submit'),
             '#submit' => ['::formSecondNextSubmit'],
-            '#validate' => ['::formSecondNextSubmit'],
+            '#validate' => ['::formSecondNextValidate'],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
                 'progress' => [
