@@ -8,6 +8,7 @@
 namespace Drupal\multistep_form_showcase\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -163,7 +164,10 @@ class MultistepForm extends FormBase
 
     public function formAjaxChangePage(array &$form, FormStateInterface $form_state)
     {
-        return $form['content'];
+        $response = new AjaxResponse();
+        $response->addCommand(new ReplaceCommand('#form-content', $form['content']));
+
+        return $response;
     }
 
     /**
@@ -256,10 +260,8 @@ class MultistepForm extends FormBase
             '#validate' => ['::formFirstNextValidate'],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
-                'wrapper' => 'form-content',
                 'progress' => [
-                    'type' => 'throbber',
-                    'message' => $this->t('Verifying entry...'),
+                    'type' => 'fullScreen',
                 ],
             ],
         ];
@@ -315,10 +317,8 @@ class MultistepForm extends FormBase
             '#limit_validation_errors' => [],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
-                'wrapper' => 'form-content',
                 'progress' => [
-                    'type' => 'throbber',
-                    'message' => $this->t('Verifying entry...'),
+                    'type' => 'fullScreen',
                 ],
             ],
         ];
@@ -331,10 +331,8 @@ class MultistepForm extends FormBase
             '#validate' => ['::formSecondNextSubmit'],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
-                'wrapper' => 'form-content',
                 'progress' => [
-                    'type' => 'throbber',
-                    'message' => $this->t('Verifying entry...'),
+                    'type' => 'fullScreen',
                 ],
             ],
         ];
