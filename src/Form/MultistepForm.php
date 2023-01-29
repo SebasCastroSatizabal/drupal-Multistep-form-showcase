@@ -130,6 +130,7 @@ class MultistepForm extends FormBase
             [
                 'city' => $form_user_inputs['city'],
                 'phone' => $form_user_inputs['phone'],
+                'full_phone' => $form_user_inputs['full_phone'],
                 'address' => $form_user_inputs['address'],
             ]
         ));
@@ -146,7 +147,8 @@ class MultistepForm extends FormBase
      */
     public function formSecondNextValidate(array &$form, FormStateInterface $form_state)
     {
-        if (!preg_match("/^[0-9]{9,14}$/", $form_state->getValue('phone'))) {
+        //Simple validation for phone number in format E.164
+        if (!preg_match("/^\+?[1-9][0-9]{7,14}$/", $form_state->getValue('full_phone'))) {
             $form_state->setErrorByName('phone', 'The phone number is not in the correct format.');
         }
     }
@@ -164,6 +166,7 @@ class MultistepForm extends FormBase
             [
                 'city' => $form_state->getValue('city'),
                 'phone' => $form_state->getValue('phone'),
+                'full_phone' => $form_state->getValue('full_phone'),
                 'address' => $form_state->getValue('address'),
             ]
         );
@@ -291,6 +294,7 @@ class MultistepForm extends FormBase
             '#validate' => ['::formFirstNextValidate'],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
+                'event' => 'click',
                 'progress' => [
                     'type' => 'fullScreen',
                 ],
@@ -328,13 +332,21 @@ class MultistepForm extends FormBase
         $build['phone'] = array(
             '#type' => 'tel',
             '#title' => $this->t('Phone number'),
-            '#pattern' => '[0-9]{9,14}',
+            '#id' => 'phoneNumber',
             '#default_value' => $form_state->getValue('phone', ''),
             '#description' => $this->t('Enter your phone number.'),
             '#attributes' => [
-                'placeholder' => 'Ex. 3124658793',
+                'id' => 'form-phone',
             ],
         );
+
+        $build['full_phone'] = [
+            '#type' => 'hidden',
+            '#default_value' => $form_state->getValue('full_phone', ''),
+            '#attributes' => [
+                'id' => 'form-full-phone',
+            ],
+        ];
 
         $build['address'] = [
             '#type' => 'textfield',
@@ -351,6 +363,7 @@ class MultistepForm extends FormBase
             '#limit_validation_errors' => [],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
+                'event' => 'click',
                 'progress' => [
                     'type' => 'fullScreen',
                 ],
@@ -365,6 +378,7 @@ class MultistepForm extends FormBase
             '#validate' => ['::formSecondNextValidate'],
             '#ajax' => [
                 'callback' => '::formAjaxChangePage',
+                'event' => 'click',
                 'progress' => [
                     'type' => 'fullScreen',
                 ],

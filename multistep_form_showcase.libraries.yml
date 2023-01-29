@@ -6,4 +6,15 @@ global:
     js/script.js: {}
   dependencies:
     - core/jquery
+    - core/jquery.once
     - core/drupal
+    - multistep_form_showcase/intl_tel_input
+
+intl_tel_input:
+  css:
+    theme:
+      //cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css:
+        { type: external, minified: true }
+  js:
+    //cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js:
+      { type: external, minified: true }
