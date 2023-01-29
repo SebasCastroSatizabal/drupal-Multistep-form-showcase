@@ -192,10 +192,10 @@ class MultistepForm extends FormBase
                 '#theme'        => 'status_messages',
                 '#message_list' => $messages,
             ];
-            $response->addCommand(new ReplaceCommand('#form-errors', $form['messages']));
         }
 
         $response->addCommand(new ReplaceCommand('#form-content', $form['content']));
+        $response->addCommand(new ReplaceCommand('#form-errors', $form['messages']));
         $response->addCommand(new InvokeCommand(NULL, 'updateProgressBar', [$form_state->get('page')]));
 
         return $response;
