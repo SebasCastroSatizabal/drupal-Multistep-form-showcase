@@ -4,4 +4,4 @@ multistep_form_showcase.form:
     _title: "Create User"
     _form: \Drupal\multistep_form_showcase\Form\MultistepForm
   requirements:
-    _permission: "TRUE"
+    _access: "TRUE"
