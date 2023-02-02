@@ -1,5 +1,5 @@
 {
-    "name": "multistep_form_showcase",
+    "name": "s_castro/multistep_form_showcase",
     "type": "drupal-module",
     "description": "This is a module to showcase how to code a Drupal multistep form.",
     "homepage": "https://github.com/SebasCastroSatizabal/drupal-multistep-form-showcase",
