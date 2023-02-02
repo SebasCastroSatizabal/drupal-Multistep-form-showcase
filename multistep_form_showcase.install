@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Multistep Form Showcase module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function multistep_form_showcase_install()
+{
+    $storage = \Drupal::entityTypeManager()->getStorage('entity_form_display');
+    /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $user_form */
+    $user_form = $storage->load('user.user.default');
+
+    //Add the fields installed by this moudle to the default user edit form.
+    $user_form
+        ->setComponent('field_multistep_first_name', [
+            'type' => 'text_textfield',
+            //Display after the standard user name and password field.
+            'weight' => -5,
+        ])
+        ->setComponent('field_multistep_last_name', [
+            'type' => 'text_textfield',
+            'weight' => -4,
+        ])
+        ->setComponent('field_multistep_gender', [
+            'type' => 'text_textfield',
+            'weight' => -3,
+        ])
+        ->setComponent('field_multistep_birthday', [
+            'type' => 'datetime_default',
+            'weight' => -2,
+        ])
+        ->setComponent('field_multistep_city', [
+            'type' => 'text_textfield',
+            //Display after starndard timezone
+            'weight' => 7,
+        ])
+        ->setComponent('field_multistep_address', [
+            'type' => 'text_textfield',
+            'weight' => 7,
+        ])
+        ->setComponent('field_multistep_phone', [
+            'type' => 'text_textfield',
+            'weight' => 7,
+        ])
+        ->save();
+}

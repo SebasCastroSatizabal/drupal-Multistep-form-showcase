@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_multistep_address
+  module:
+    - user
+  enforced:
+    module:
+      - multistep_form_showcase
+id: user.user.field_multistep_address
+field_name: field_multistep_address
+entity_type: user
+bundle: user
+label: Address
+description: ""
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ""
+settings: {}
+field_type: string
