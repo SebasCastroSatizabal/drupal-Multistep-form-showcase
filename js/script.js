@@ -1,6 +1,6 @@
 (function ($, Drupal) {
   //Variable to store the selected dial code by the user.
-  let PhoneCountry = "us";
+  let PhoneCountry = "co";
 
   /**
    * Callback function to update the progress bar classes.
@@ -23,6 +23,7 @@
             utilsScript:
               "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
             initialCountry: PhoneCountry,
+            preferredCountries: ["co", "us"],
           });
 
           //Set the phone number in the hidden input on submit
