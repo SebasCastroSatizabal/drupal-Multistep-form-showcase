@@ -10,11 +10,18 @@ namespace Drupal\multistep_form_showcase\Form;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\Entity\User;
 
 class MultistepForm extends FormBase
 {
+    /**
+     * The max lenght property of several text fields in the form
+     * @var int
+     */
+    private const TEXTFIELD_MAXLENGHT = 32;
 
     /**
      * {@inheritDoc}
@@ -171,7 +178,9 @@ class MultistepForm extends FormBase
             ]
         );
 
-        //TODO create the user with the data
+        //Create the user
+        $values = $this->mapFormValues($form_values);
+        $form_state->set('user_saved', $this->createUserFromFormValues($values));
 
         $form_state->set('page', 3);
         $form_state->setRebuild(TRUE);
@@ -236,6 +245,7 @@ class MultistepForm extends FormBase
             '#title' => $this->t('First Name'),
             '#description' => $this->t('Enter your first name.'),
             '#default_value' => $form_state->getValue('first_name', ''),
+            '#maxlength' => $this::TEXTFIELD_MAXLENGHT,
             // '#required' => TRUE,
         ];
 
@@ -244,6 +254,7 @@ class MultistepForm extends FormBase
             '#title' => $this->t('Last Name'),
             '#default_value' => $form_state->getValue('last_name', ''),
             '#description' => $this->t('Enter your last name.'),
+            '#maxlength' => $this::TEXTFIELD_MAXLENGHT,
             // '#required' => TRUE,
         ];
 
@@ -252,8 +263,8 @@ class MultistepForm extends FormBase
             '#title' => $this->t('Gender'),
             '#default_value' => $form_state->getValue('gender', ''),
             '#options' => [
-                'male' => $this->t('Male'),
-                'female' => $this->t('Female'),
+                'Male' => $this->t('Male'),
+                'Female' => $this->t('Female'),
                 'no_respond' => $this->t('Prefer not to respond'),
                 'other' => $this->t('Other'),
             ],
@@ -265,6 +276,7 @@ class MultistepForm extends FormBase
             '#title' => $this->t('Other Gender'),
             '#default_value' => $form_state->getValue('other_gender', ''),
             '#description' => $this->t('Enter the name of your gender'),
+            '#maxlength' => $this::TEXTFIELD_MAXLENGHT,
             '#states' => [
                 // Only show this field when the 'other' radio button is enabled.
                 'visible' => [
@@ -406,9 +418,13 @@ class MultistepForm extends FormBase
             '#title' => $this->t('A multistep form showcase (page 3)'),
         ];
 
+        $message = $form_state->get('user_saved') ?
+            'The user was successfully created.' :
+            'There was a error creating the user, please try again.';
+
         $build['body'] = [
             '#type' => 'item',
-            '#title' => $this->t('Confirm the form'),
+            '#title' => $this->t($message),
         ];
 
         $build['submit'] = [
@@ -473,5 +489,93 @@ class MultistepForm extends FormBase
         ];
 
         return $build;
+    }
+
+    /**
+     * Trim and map the form values to by save in the user fields.
+     * 
+     * @param array $form_values array with the values passed by the form.
+     * @return array array of mapped values.
+     */
+    private function mapFormValues(array $form_values)
+    {
+        $values['first_name'] = trim($form_values['first_name']);
+        $values['last_name'] = trim($form_values['last_name']);
+        $values['city'] = trim($form_values['city']);
+        $values['address'] = trim($form_values['address']);
+        $values['phone'] = $form_values['full_phone'];
+        $values['birthday'] = $form_values['birthday'];
+
+        //Assign gender
+        switch ($form_values['gender']) {
+            case 'other':
+                $values['gender'] = $form_values['other_gender'];
+                break;
+            case 'no_respond':
+                $values['gender'] = '';
+                break;
+            default:
+                $values['gender'] = $form_values['gender'];
+        }
+
+        return $values;
+    }
+
+    /**
+     * Save a new Drupal user with the given values.
+     * 
+     * @param array $values array with the values to set.
+     * @return bool True if the user was successfully created. False otherwise.
+     */
+    private function createUserFromFormValues(array $values)
+    {
+        $username = $this->generateUsername('sebas', 'castro');
+
+        $user = User::create();
+        $user->setUsername($username);
+        $user->set('field_multistep_first_name', $values['first_name']);
+        $user->set('field_multistep_last_name', $values['last_name']);
+        $user->set('field_multistep_gender', $values['gender']);
+        $user->set('field_multistep_birthday', $values['birthday']);
+        $user->set('field_multistep_phone', $values['phone']);
+        $user->set('field_multistep_address', $values['address']);
+        $user->activate();
+
+        try {
+            $user->save();
+        } catch (EntityStorageException $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper function to create a unique username from the first name and last name.
+     * 
+     * @param string $first_name first name already sanitized.
+     * @param string $last_name last name already sanitized.
+     * @return string the username.
+     */
+    private function generateUsername(string $first_name, string $last_name)
+    {
+        //Trim and remove spaces
+        $first_name = trim($first_name);
+        $first_name = preg_replace('/[ ]+/', ' ', $first_name);
+        $last_name = trim($last_name);
+        $last_name = preg_replace('/[ ]+/', '', $last_name);
+
+        //Combine the first name and last name to get the username
+        $base_username = substr($first_name, 0, 1) . $last_name;
+        $i = 0;
+
+        //Check if a user with that username already exists and generate a unique one.
+        do {
+            $username = ($i == 0) ? $base_username : $base_username . $i;
+            $user_exists = user_load_by_name($username);
+            $i++;
+        } while ($user_exists);
+
+        return $username;
     }
 }
