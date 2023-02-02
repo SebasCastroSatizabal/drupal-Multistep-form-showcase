@@ -1,13 +1,7 @@
 {
-    "name": "multistep_form_showcase",
+    "name": "s_castro/multistep_form_showcase",
     "type": "drupal-module",
     "description": "This is a module to showcase how to code a Drupal multistep form.",
-    "keywords": [
-    ],
-    "homepage": "https://www.drupal.org/project/multistep_form_showcase",
-    "minimum-stability": "dev",
-    "support": {
-        "issues": "https://www.drupal.org/project/issues/multistep_form_showcase",
-        "source": "http://cgit.drupalcode.org/multistep_form_showcase",
-    },
+    "homepage": "https://github.com/SebasCastroSatizabal/drupal-multistep-form-showcase",
+    "minimum-stability": "dev"
 }
