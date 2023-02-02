@@ -538,6 +538,7 @@ class MultistepForm extends FormBase
         $user->set('field_multistep_gender', $values['gender']);
         $user->set('field_multistep_birthday', $values['birthday']);
         $user->set('field_multistep_phone', $values['phone']);
+        $user->set('field_multistep_city', $values['city']);
         $user->set('field_multistep_address', $values['address']);
         $user->activate();
 
