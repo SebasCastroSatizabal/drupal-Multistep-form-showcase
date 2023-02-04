@@ -247,7 +247,7 @@ class MultistepForm extends FormBase
 
         $build['description'] = [
             '#type' => 'item',
-            '#title' => $this->t('A multistep form showcase (page 1)'),
+            '#title' => $this->t('Personal information (page 1)'),
         ];
 
         $build['first_name'] = [
@@ -256,7 +256,7 @@ class MultistepForm extends FormBase
             '#description' => $this->t('Enter your first name.'),
             '#default_value' => $form_state->getValue('first_name', ''),
             '#maxlength' => $this::TEXTFIELD_MAXLENGHT,
-            // '#required' => TRUE,
+            '#required' => TRUE,
         ];
 
         $build['last_name'] = [
@@ -265,7 +265,7 @@ class MultistepForm extends FormBase
             '#default_value' => $form_state->getValue('last_name', ''),
             '#description' => $this->t('Enter your last name.'),
             '#maxlength' => $this::TEXTFIELD_MAXLENGHT,
-            // '#required' => TRUE,
+            '#required' => TRUE,
         ];
 
         $build['gender'] = [
@@ -278,7 +278,7 @@ class MultistepForm extends FormBase
                 'no_respond' => $this->t('Prefer not to respond'),
                 'other' => $this->t('Other'),
             ],
-            // '#required' => TRUE,
+            '#required' => TRUE,
         ];
 
         $build['other_gender'] = [
@@ -302,7 +302,7 @@ class MultistepForm extends FormBase
             '#title' => $this->t('Date of birth'),
             '#description' => $this->t('Enter your birthday.'),
             '#default_value' => $form_state->getValue('birthday', ''),
-            // '#required' => TRUE,
+            '#required' => TRUE,
         ];
 
         $build['actions'] = [
@@ -341,7 +341,7 @@ class MultistepForm extends FormBase
 
         $build['description'] = [
             '#type' => 'item',
-            '#title' => $this->t('A multistep form showcase (page 2)'),
+            '#title' => $this->t('Contact and location (page 2)'),
         ];
 
         $build['city'] = [
@@ -349,13 +349,12 @@ class MultistepForm extends FormBase
             '#title' => $this->t('City'),
             '#default_value' => $form_state->getValue('city', ''),
             '#description' => $this->t('Enter the city you live in.'),
-            // '#required' => TRUE,
+            '#required' => TRUE,
         ];
 
         $build['phone'] = array(
             '#type' => 'tel',
             '#title' => $this->t('Phone number'),
-            '#id' => 'phoneNumber',
             '#default_value' => $form_state->getValue('phone', ''),
             '#description' => $this->t('Enter your phone number.'),
             '#attributes' => [
@@ -426,16 +425,18 @@ class MultistepForm extends FormBase
 
         $build['description'] = [
             '#type' => 'item',
-            '#title' => $this->t('A multistep form showcase (page 3)'),
+            '#title' => $this->t('Complete!'),
         ];
 
-        $message = $form_state->get('user_saved') ?
-            'The user was successfully created.' :
+        $username = $form_state->get('user_saved');
+        $message = $username ?
+            'The user "' . $username . '" was successfully created.' :
             'There was a error creating the user, please try again.';
 
         $build['body'] = [
-            '#type' => 'item',
-            '#title' => $this->t($message),
+            '#type' => 'html_tag',
+            '#tag' => 'p',
+            '#value' => $this->t($message),
         ];
 
         $build['submit'] = [
@@ -536,11 +537,12 @@ class MultistepForm extends FormBase
      * Save a new Drupal user with the given values.
      * 
      * @param array $values array with the values to set.
-     * @return bool True if the user was successfully created. False otherwise.
+     * @return string|bool Returns the username of the created user. 
+     * False if there was a problem creating the user.
      */
     private function createUserFromFormValues(array $values)
     {
-        $username = $this->generateUsername('sebas', 'castro');
+        $username = $this->generateUsername($values['first_name'], $values['last_name']);
 
         $user = User::create();
         $user->setUsername($username);
@@ -559,7 +561,7 @@ class MultistepForm extends FormBase
             return false;
         }
 
-        return true;
+        return $username;
     }
 
     /**
