@@ -7,6 +7,7 @@
 
 namespace Drupal\multistep_form_showcase\Form;
 
+use DateTime;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -81,12 +82,19 @@ class MultistepForm extends FormBase
      */
     public function formFirstNextValidate(array &$form, FormStateInterface $form_state)
     {
-        $gender = $form_state->getValue('gender');
-        if ($gender != '' && $gender === 'other') {
-            $other_gender = $form_state->getValue('other_gender');
+        //Check the birthday is a day in the past.
+        $birthdate = new DateTime($form_state->getValue('birthday'));
+        if ($birthdate >= new DateTime('today')) {
+            $form_state->setErrorByName(
+                'birthday',
+                $this->t('The birthday must be a day in the past.')
+            );
+        }
 
-            if (empty($other_gender)) {
-                // Set an error when selecting 'other' gender and not filling the other gender field
+        // Set an error when selecting 'other' gender and not filling the other gender field
+        if ($form_state->getValue('gender') === 'other') {
+
+            if (empty($$form_state->getValue('other_gender'))) {
                 $form_state->setErrorByName(
                     'other_gender',
                     $this->t('When the "Other" gender is selected the name of the gender is required.')
@@ -155,8 +163,10 @@ class MultistepForm extends FormBase
     public function formSecondNextValidate(array &$form, FormStateInterface $form_state)
     {
         //Simple validation for phone number in format E.164
-        if (!preg_match("/^\+?[1-9][0-9]{7,14}$/", $form_state->getValue('full_phone'))) {
-            $form_state->setErrorByName('phone', 'The phone number is not in the correct format.');
+        if (!empty($form_state->getValue('phone'))) {
+            if (!preg_match("/^\+?[1-9][0-9]{7,14}$/", $form_state->getValue('full_phone'))) {
+                $form_state->setErrorByName('phone', 'The phone number is not in the correct format.');
+            }
         }
     }
 
@@ -291,6 +301,7 @@ class MultistepForm extends FormBase
             '#type' => 'date',
             '#title' => $this->t('Date of birth'),
             '#description' => $this->t('Enter your birthday.'),
+            '#default_value' => $form_state->getValue('birthday', ''),
             // '#required' => TRUE,
         ];
 
