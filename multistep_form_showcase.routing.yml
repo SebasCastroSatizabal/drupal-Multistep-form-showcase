@@ -1,5 +1,5 @@
 multistep_form_showcase.form:
-  path: "/demo"
+  path: "/multistep_form_demo"
   defaults:
     _title: "Create User"
     _form: \Drupal\multistep_form_showcase\Form\MultistepForm

@@ -17,7 +17,7 @@ function multistep_form_showcase_help($route_name, RouteMatchInterface $route_ma
     case 'help.page.multistep_form_showcase':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('This is a module to showcase how to code a Drupal multistep form. You can find the form in /demo') . '</p>';
+      $output .= '<p>' . t('This is a module to showcase how to code a Drupal multistep form. You can find the form in /multistep_form_demo') . '</p>';
       $output .= '<p>' . t('A new user will be created using the information sumbitted.') . '</p>';
       return $output;
 
