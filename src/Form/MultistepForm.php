@@ -94,7 +94,7 @@ class MultistepForm extends FormBase
         // Set an error when selecting 'other' gender and not filling the other gender field
         if ($form_state->getValue('gender') === 'other') {
 
-            if (empty($$form_state->getValue('other_gender'))) {
+            if (empty($form_state->getValue('other_gender'))) {
                 $form_state->setErrorByName(
                     'other_gender',
                     $this->t('When the "Other" gender is selected the name of the gender is required.')
@@ -271,7 +271,7 @@ class MultistepForm extends FormBase
         $build['gender'] = [
             '#type' => 'radios',
             '#title' => $this->t('Gender'),
-            '#default_value' => $form_state->getValue('gender', ''),
+            '#default_value' => $form_state->getValue('gender', 'Male'),
             '#options' => [
                 'Male' => $this->t('Male'),
                 'Female' => $this->t('Female'),
