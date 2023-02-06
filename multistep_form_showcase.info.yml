@@ -2,6 +2,7 @@ name: "Multistep Form Showcase"
 type: module
 description: "This is a module to showcase how to code a Drupal multistep form."
 core: 8.x
+core_version_requirement: ^8 || ^9
 package: "Custom"
 dependencies:
   - drupal:datetime
