@@ -71,7 +71,7 @@ class MultistepFormTest extends WebDriverTestBase
         $pattern = '/The user \"(\w+)\" was successfully created./';
         $this->assertTrue((bool)preg_match($pattern, $body_text, $matches));
 
-        // Check if the suer was created
+        // Check if the user was created
         $user = user_load_by_name($matches[1]);
         $this->assertEquals('Tom', $user->field_multistep_first_name->value);
         $this->assertEquals('Smith', $user->field_multistep_last_name->value);
@@ -83,6 +83,23 @@ class MultistepFormTest extends WebDriverTestBase
             '10751 Meadowglen Lane Houston, TX 77042 Commons at Westchase',
             $user->field_multistep_address->value
         );
+
+        //Check the return to the first page
+        $page3->pressButton('Return');
+        $assert->assertWaitOnAjaxRequest();
+
+        // Check we are now in the first page the fields are empty
+        $this->checkPage(1);
+        $first_name = $page1->findField('first_name')->getValue();
+        $this->assertEmpty($first_name);
+        $second_name = $page1->findField('last_name')->getValue();
+        $this->assertEmpty($second_name);
+        $gender = $page1->findField('gender')->getValue();
+        $this->assertEquals('Male', $gender);
+        $other_gender = $page1->findField('other_gender')->getValue();
+        $this->assertEmpty($other_gender);
+        $birthday = $page1->findField('birthday')->getValue();
+        $this->assertEmpty($birthday);
     }
 
     /**
