@@ -10,7 +10,13 @@ use Drupal\Tests\BrowserTestBase;
  *
  * @group multistep_form_showcase
  */
-class LoadTest extends BrowserTestBase {
+class LoadTest extends BrowserTestBase
+{
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $defaultTheme = 'bartik';
 
   /**
    * Modules to enable.
@@ -29,7 +35,8 @@ class LoadTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp()
+  {
     parent::setUp();
     $this->user = $this->drupalCreateUser(['administer site configuration']);
     $this->drupalLogin($this->user);
@@ -38,9 +45,9 @@ class LoadTest extends BrowserTestBase {
   /**
    * Tests that the home page loads with a 200 response.
    */
-  public function testLoad() {
+  public function testLoad()
+  {
     $this->drupalGet(Url::fromRoute('<front>'));
     $this->assertSession()->statusCodeEquals(200);
   }
-
 }
